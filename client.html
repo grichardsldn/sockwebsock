@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script>
+var es = new WebSocket("ws://localhost:3001/3002");
+console.log("es=" + es ); 
+es.onopen = function( event ) {
+  console.log("Connected");
+};
+
+es.onmessage = function( event) {
+  console.log("Recieved message: " +  event.data);
+  document.getElementById( 'text' ).value=event.data;
+};
+
+es.onclose = function( event ) {
+  console.log("Connection closed");
+};
+    </script>
+  </head>
+    <textarea id="text">
+    </textarea>
+  <body>
+  </body>
+</html>

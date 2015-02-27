@@ -50,7 +50,7 @@ module.exports = ( function() {
         if( ( s.type == 'web' ) 
           && ( s.port == port ) ) {
             console.log("notify connection: " + s.name);
-            s.connection.send(data );
+            s.connection.send(data, { binary: false } );
         }
       }
     },
