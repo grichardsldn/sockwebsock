@@ -11,7 +11,7 @@ module.exports = ( function() {
       }
       console.log( keys.length + ' sockets: ');
       for( var i=0; i<keys.length ; i++ ) {
-        console.log( '  ' + keys[i] + ', port=' + socketlist[keys[i]].port );
+        console.log( '  ' + keys[i] + ', endpoint=' + socketlist[keys[i]].endpoint );
       }
     },
 
@@ -23,10 +23,10 @@ module.exports = ( function() {
       return keys.length;
     },
 
-    add : function( name, type, connection, port ) {
+    add : function( name, type, connection, endpoint ) {
       socketlist[name] = {
         name: name,
-        port: port, 
+        endpoint: endpoint, 
         type: type,
         connection: connection
       };
@@ -37,8 +37,8 @@ module.exports = ( function() {
     },
 
     // write data to all 'web' sockets sat on a particular port
-    send : function( port, data ) {
-      console.log("send: port=" + port + ' data=' + data );
+    send : function( endpoint, data ) {
+      console.log("send: endpoint=" + endpoint + ' data=' + data );
 
       var keys = [];
       for( var key in socketlist ) {
@@ -46,9 +46,9 @@ module.exports = ( function() {
       }
       for( var i=0; i<keys.length ; i++ ) {
         var s = socketlist[keys[i]];
-        // console.log( 'considering ' + s.name + ' type=' + s.type + ' port=' + s.port);
+        console.log( 'considering ' + s.name + ' type=' + s.type + ' endpoint=' + s.endpoint);
         if( ( s.type == 'web' ) 
-          && ( s.port == port ) ) {
+          && ( s.endpoint == endpoint ) ) {
             console.log("notify connection: " + s.name);
             s.connection.send(data, { binary: false } );
         }
