@@ -27,16 +27,16 @@ var sockWebSock = ( function() {
 
   var tcpsocket = function( port ) {
     var server = net.createServer(function(c) { //'connection' listener
-      log('TCP client connected');
+      log(port + ': TCP client connected');
 
       c.name = "tcp:" + guid();
       socketlist.add( c.name, "tcp", c, '/' + c.address().port );
-      socketlist.dump();
+      //socketlist.dump();
   
       c.on('end', function() {
-        log('TCP client disconnected');
+        log(port + ': TCP client disconnected');
         socketlist.remove( c.name );
-        socketlist.dump();
+        //socketlist.dump();
       });
       c.on('data', function( data ) {
         log('received from:' + c.address().port + ': ' + data );
@@ -45,7 +45,7 @@ var sockWebSock = ( function() {
     });
   
     server.listen(port, function() { //'listening' listener
-      log('TCP server bound to port ' + port);
+      //log('TCP server bound to port ' + port);
     });
   };
 
@@ -56,19 +56,19 @@ var sockWebSock = ( function() {
         path: endpoint });
   
       wss.on("connection", function( ws ) {
-        log("websocket connected");
+        log(websocketport + endpoint + ": websocket connected");
         ws.name = "web:" + guid();
         socketlist.add( ws.name, "web", ws, endpoint );
-        socketlist.dump();
+        //socketlist.dump();
   
         ws.on("close", function() {
-          log("websocket connection closed");
+          log( websocketport + endpoint + ": websocket connection closed");
           socketlist.remove( ws.name );
-          socketlist.dump();
+          //socketlist.dump();
         });
       });
-      log('websocket server port:' + websocketport 
-        + ' endpoint:' + endpoint + ' connected');
+      //log('websocket server port:' + websocketport 
+      //  + ' endpoint:' + endpoint + ' bound');
     } catch (e ) {
       console.log('Excpetion: ' + e );
     };
@@ -82,10 +82,11 @@ var sockWebSock = ( function() {
       var tcpport = arg.split('/')[0];
       var webport = arg.split('/')[1];
   
-      tcpsocket( tcpport );
-      websocket( webport, '/' + tcpport );
       log('Mapping tcp port ' + tcpport 
         + ' to ws://localhost:' + webport + '/' + tcpport );
+
+      tcpsocket( tcpport );
+      websocket( webport, '/' + tcpport );
     }
   };
 })();
