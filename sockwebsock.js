@@ -1,9 +1,5 @@
 'use strict';
 
-var makeSocketlist = require('./socketlist.js');
-
-var socketlist = makeSocketlist();
-
 function guid() {
     function _p8(s) {
         var p = (Math.random().toString(16)+"000000000").substr(2,8);
@@ -32,11 +28,11 @@ function tcpsocket( net, port ) {
   });
 
   server.listen(port, function() { //'listening' listener
-    console.log('TCP server bound port ' + port);
+    console.log('TCP server bound to port ' + port);
   });
 }
 
-function websocket( ws, websocketport, endpoint ) {
+function websocket( WebSocketServer, websocketport, endpoint ) {
   try {
     var wss = new WebSocketServer( { 
       port: websocketport,
@@ -62,14 +58,41 @@ function websocket( ws, websocketport, endpoint ) {
 
 }
 
-var net = require('net');
-var tcpports=[3002,3003];
-tcpports.forEach( function( port ) {
-  tcpsocket( net, port );
-} );
+function create_pair( arg, net, WebSocketServer ) {
+  var tcpport = arg.split('/')[0];
+  var webport = arg.split('/')[1];
 
-var WebSocketServer = require("ws").Server;
-websocket( WebSocketServer, 3001, '/3002');
-websocket( WebSocketServer, 3005, '/3003');
+  tcpsocket( net, tcpport );
+  websocket( WebSocketServer, webport, '/' + tcpport );
+}
+
+function sockwebsock() {
+  var opt = require('node-getopt').create([
+    ['v' , ''                    , 'verbose'],
+    ['h' , 'help'                , 'display this help'],
+  ])              // create Getopt instance
+  .bindHelp()     // bind option 'help' to default action
+  .parseSystem(); // parse command line
+  
+  console.info( opt );
+
+  if( opt.argv.length == 0) {
+    console.error( "No socket pairs specified" );
+    process.exit();  
+  }
+
+  var net = require('net');
+  var WebSocketServer = require("ws").Server;
+  
+  opt.argv.forEach( function( arg ) {
+    create_pair( arg, net, WebSocketServer );
+  });
+}
+
+// socketlist keeps track of what is connected where
+var makeSocketlist = require('./socketlist.js');
+var socketlist = makeSocketlist();
+  
+sockwebsock();
 
 
