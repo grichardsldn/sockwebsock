@@ -50,7 +50,11 @@ module.exports = ( function() {
         if( ( s.type == 'web' ) 
           && ( s.endpoint == endpoint ) ) {
             //console.log("notify connection: " + s.name);
-            s.connection.send(data, { binary: false } );
+            try {
+              s.connection.send(data, { binary: false } );
+            } catch (e ) {
+              //console.log("Got exception from send(): " + e );
+            }
         }
       }
     },

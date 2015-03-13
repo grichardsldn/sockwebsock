@@ -10,11 +10,16 @@ var sockWebSock = ( function() {
   var WebSocketServer = require("ws").Server;
 
   var verbose = false;
+  var logport;
 
   var log = function( msg ) {
+    msg = new Date().toUTCString() + ' ' + msg;
     if( verbose ) {
       console.log( msg );
     } 
+    if( logport ) {
+      socketlist.send('/', msg ); // the logging endpoint is just /
+    }
   };
 
   var guid = function() {
@@ -87,13 +92,20 @@ var sockWebSock = ( function() {
 
       tcpsocket( tcpport );
       websocket( webport, '/' + tcpport );
+    },
+    create_logport: function( port, WebSocketServer ) {
+      logport = port;
+      log('Creating logport ' + port );
+      websocket( port, '/');
     }
+    
   };
 })();
 
 var opt = require('node-getopt').create([
-  ['v' , ''                    , 'verbose'],
-  ['h' , 'help'                , 'display this help'],
+  ['v' , '', 'verbose'],
+  ['l' , 'logport=ARG', 'logging port'],
+  ['h' , 'help', 'display this help'],
 ])              // create Getopt instance
 .bindHelp()     // bind option 'help' to default action
 .parseSystem(); // parse command line
@@ -105,6 +117,10 @@ if( opt.argv.length == 0) {
 
 if( opt.options.v ) {
   sockWebSock.verbose();
+}
+
+if( opt.options.logport ) {
+  sockWebSock.create_logport( opt.options.logport );
 }
 
 opt.argv.forEach( function( arg ) {
