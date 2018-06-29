@@ -4,7 +4,7 @@
 
 var WebSocket = require("ws");
 
-var path = process.argv[2] || 'ws://localhost:5001/';
+var path = process.argv[2] || 'ws://localhost:3001/';
 console.log("Connecting to " + path );
 var es = new WebSocket( path );
 

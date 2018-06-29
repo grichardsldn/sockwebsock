@@ -54,6 +54,19 @@ var sockWebSock = ( function() {
     });
   };
 
+  var httpsocket = function( httpsocketport ) {
+    var http = require('http');
+
+    http.createServer( function( req,res ) {
+      log( "request on httpsocket" );
+      socketlist.dump();
+      socketlist.send('/3001' , "httpdata received" );
+      res.writeHead( 200, {'Content-Type': 'text/plain' } ); res.end('Hello Owly');
+    }).listen(3000);
+  
+    log( 'http server started on localhost:3000' );
+  };
+
   var websocket = function( websocketport, endpoint ) {
     try {
       var wss = new WebSocketServer( { 
@@ -92,6 +105,7 @@ var sockWebSock = ( function() {
 
       tcpsocket( tcpport );
       websocket( webport, '/' + tcpport );
+      httpsocket( "ignored" );
     },
     create_logport: function( port, WebSocketServer ) {
       logport = port;
