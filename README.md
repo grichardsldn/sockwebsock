@@ -15,6 +15,11 @@ localhost:4001/3001 and localhost:4002/3002, with a logging web socket on localh
 
 node sockwebsock -l 5001 4001/3001 4002/3002
 
+What I want to do next:
+
+Strip out the tcp support, replace it with http, get rid of the mappings
+websocket binds to port /xxx anything writing by http to /xxx will go to
+that websocket.  there will be no mapping setup.
 
 
 
