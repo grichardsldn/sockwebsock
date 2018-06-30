@@ -56,13 +56,24 @@ var sockWebSock = ( function() {
 
   var httpsocket = function( httpsocketport ) {
     var http = require('http');
-
+ 
     http.createServer( function( req,res ) {
-      log( "request on httpsocket" );
-      socketlist.dump();
-      socketlist.send('/3001' , "httpdata received" );
-      res.writeHead( 200, {'Content-Type': 'text/plain' } ); res.end('Hello Owly');
-    }).listen(3000);
+      if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString(); // convert Buffer to string
+        });
+        req.on('end', () => {
+          console.log("got body: " + body);
+
+          let path = req.url.replace(/\/?(?:\?.*)?$/, '').toLowerCase();
+          log( "request on httpsocket for path" + path );
+          //socketlist.dump();
+          socketlist.send( path, body );
+          res.writeHead( 200, {'Content-Type': 'text/plain' } ); res.end('Hello Owly');
+        });  
+      }
+    }).listen(3000); // port is fixed at the moment
   
     log( 'http server started on localhost:3000' );
   };
@@ -105,14 +116,21 @@ var sockWebSock = ( function() {
 
       tcpsocket( tcpport );
       websocket( webport, '/' + tcpport );
-      httpsocket( "ignored" );
+      
     },
+    create_websocket: function( port, path ) {
+      websocket( port, path);
+    },
+
     create_logport: function( port, WebSocketServer ) {
       logport = port;
       log('Creating logport ' + port );
       websocket( port, '/');
-    }
-    
+    },
+
+    create_httplistener: function( port ) {
+      httpsocket( port );
+    },
   };
 })();
 
@@ -124,10 +142,10 @@ var opt = require('node-getopt').create([
 .bindHelp()     // bind option 'help' to default action
 .parseSystem(); // parse command line
  
-if( opt.argv.length == 0) {
-  console.error( "No socket pairs specified" );
-  process.exit();  
-}
+// if( opt.argv.length == 0) {
+//  console.error( "No socket pairs specified" );
+//  process.exit();  
+//}
 
 if( opt.options.v ) {
   sockWebSock.verbose();
@@ -140,6 +158,8 @@ if( opt.options.logport ) {
 opt.argv.forEach( function( arg ) {
   sockWebSock.create_pair( arg );
 });
+sockWebSock.create_websocket( 3001, "/status" );
+sockWebSock.create_httplistener( 3000 );
   
 
 
