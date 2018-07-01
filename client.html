@@ -1,24 +1,24 @@
 <html>
   <head>
-    <script>
-var es = new WebSocket("ws://localhost:4001/3001"); 
-console.log("es=" + es ); 
-es.onopen = function( event ) {
-  console.log("Connected");
-};
-
-es.onmessage = function( event) {
-  console.log("Recieved message: " +  event.data);
-  document.getElementById( 'text' ).value=event.data;
-};
-
-es.onclose = function( event ) {
-  console.log("Connection closed");
-};
-    </script>
+    <script src="websockreader.js"></script>
   </head>
-    <textarea id="text">
-    </textarea>
+
   <body>
+    <h1 id='status1'>h1</h1>
+    <textarea id="data1">
+    </textarea>
+    <script>
+      console.log("Starting");
+      let websockreader = WebSockReader("ws://localhost:3001/status1");
+      websockreader.onconnect( function(endpoint) { 
+        document.getElementById('status1').innerHTML = `Connected ${endpoint}`;
+      } );
+      websockreader.ondisconnect( function( endpoint ) {
+        document.getElementById('status1').innerHTML = `Disconnected ${endpoint}`;
+      } );
+      websockreader.onmessage( function( data ) {
+        document.getElementById('data1').innerHTML = data;
+      } );
+    </script>
   </body>
 </html>
