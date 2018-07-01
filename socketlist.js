@@ -34,6 +34,7 @@ module.exports = ( function() {
     },
 
     remove : function( name ) {
+      console.log("socketlist removing: " + name );
       delete socketlist[name];
     },
 

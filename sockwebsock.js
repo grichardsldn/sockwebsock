@@ -70,7 +70,7 @@ var sockWebSock = ( function() {
           log( "request on httpsocket for path" + path );
           //socketlist.dump();
           socketlist.send( path, body );
-          res.writeHead( 200, {'Content-Type': 'text/plain' } ); res.end('Hello Owly');
+          res.writeHead( 200, {'Content-Type': 'text/plain' } ); res.end('Hello\n');
         });  
       }
     }).listen(3000); // port is fixed at the moment
@@ -78,16 +78,17 @@ var sockWebSock = ( function() {
     log( 'http server started on localhost:3000' );
   };
 
-  var websocket = function( websocketport, endpoint ) {
+  var old_websocket_dont_use_this = function( websocketport, endpoint ) {
     try {
       var wss = new WebSocketServer( { 
         port: websocketport,
-        path: endpoint });
+       });
   
       wss.on("connection", function( ws ) {
         log(websocketport + endpoint + ": websocket connected");
         ws.name = "web:" + guid();
-        socketlist.add( ws.name, "web", ws, endpoint );
+        console.log( ws );
+        socketlist.add( ws.name, "web", ws, endpoint);
         //socketlist.dump();
   
         ws.on("close", function() {
@@ -96,12 +97,43 @@ var sockWebSock = ( function() {
           //socketlist.dump();
         });
       });
-      //log('websocket server port:' + websocketport 
-      //  + ' endpoint:' + endpoint + ' bound');
     } catch (e ) {
       console.log('Excpetion: ' + e );
     };
   };
+
+  var websocket = function( websocketport ) {
+    const http = require('http');
+    const url = require('url');
+
+    const WebSocket = require('ws');
+ console.log("GDR: creating websocketserver on port " + websocketport );
+    const server = http.createServer();
+ 
+    server.on('upgrade', function upgrade(request, socket, head) {
+      const pathname = url.parse(request.url).pathname;
+ console.log("GDR: connection from endpoint" + pathname );
+      const wss = new WebSocket.Server({ noServer: true });
+
+      wss.on('connection', function (ws) {
+        console.log("wss connection on endpoint " + pathname);
+        ws.name = "web:" + guid();
+        socketlist.add( ws.name, "web", ws, pathname);
+
+        ws.on('close', function () {
+          console.log("wss close on endpoint " + pathname);
+          socketlist.remove( ws.name );
+        });
+      });
+
+      wss.handleUpgrade(request, socket, head, function done(ws) {
+        wss.emit('connection', ws, request);
+      });
+    } );
+    console.log("GDR: calling server.listen");
+    server.listen(websocketport);
+    console.log("GDR: server.listen returned");
+  }
 
   return {
     verbose: function() {
@@ -158,7 +190,7 @@ if( opt.options.logport ) {
 opt.argv.forEach( function( arg ) {
   sockWebSock.create_pair( arg );
 });
-sockWebSock.create_websocket( 3001, "/status" );
+sockWebSock.create_websocket( 3001, "/" );
 sockWebSock.create_httplistener( 3000 );
   
 
