@@ -56,7 +56,7 @@ var sockWebSock = ( function() {
 
   var httpsocket = function( httpsocketport ) {
     var http = require('http');
- 
+ console.log("Creating http input on port " + httpsocketport );
     http.createServer( function( req,res ) {
       if (req.method === 'POST') {
         let body = '';
@@ -169,6 +169,8 @@ var sockWebSock = ( function() {
 var opt = require('node-getopt').create([
   ['v' , '', 'verbose'],
   ['l' , 'logport=ARG', 'logging port'],
+  ['i' , 'inport=ARG', 'incoming http port'],
+  ['o' , 'outport=ARG', 'outgoing websocket port'],
   ['h' , 'help', 'display this help'],
 ])              // create Getopt instance
 .bindHelp()     // bind option 'help' to default action
@@ -187,11 +189,21 @@ if( opt.options.logport ) {
   sockWebSock.create_logport( opt.options.logport );
 }
 
+
+
+if( opt.options.inport ) {
+  sockWebSock.create_httplistener( opt.options.inport );
+}
+
+if( opt.options.outport ) {
+  sockWebSock.create_websocket( opt.options.outport );
+}
+
+// old tcp pairs as trailling args
 opt.argv.forEach( function( arg ) {
   sockWebSock.create_pair( arg );
 });
-sockWebSock.create_websocket( 3001, "/" );
-sockWebSock.create_httplistener( 3000 );
+
   
 
 
